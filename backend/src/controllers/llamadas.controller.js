@@ -1,7 +1,21 @@
-// Simulación de datos (podés reemplazar esto luego con base de datos)
+// Simulación de base de datos en memoria
 let posts = [
-  { id: 1, title: "Primer post", content: "Contenido de ejemplo", author: "Matías" },
-  { id: 2, title: "Segundo post", content: "Otro contenido", author: "Lucía" }
+  {
+    id: 1,
+    title: "Primer post",
+    content: "Contenido de ejemplo",
+    author: "Matías",
+    createdAt: new Date(),
+    comments: []
+  },
+  {
+    id: 2,
+    title: "Segundo post",
+    content: "Otro contenido",
+    author: "Lucía",
+    createdAt: new Date(),
+    comments: []
+  }
 ];
 
 // GET → Obtener todos los posts
@@ -10,7 +24,7 @@ const getAllPosts = (req, res) => {
 };
 
 // POST → Crear un nuevo post
-const getPost = (req, res) => {
+const createPost = (req, res) => {
   const { title, content, author } = req.body;
 
   if (!title || !content || !author) {
@@ -23,23 +37,39 @@ const getPost = (req, res) => {
     content,
     author,
     createdAt: new Date(),
+    comments: []
   };
 
   posts.push(newPost);
   res.status(201).json(newPost);
 };
 
-// POST → Obtener un post por ID (aunque por convención sería GET)
-const getPostById = (req, res) => {
-  const id = parseInt(req.params.id);
-  const post = posts.find(p => p.id === id);
+
+// POST → Crear un comentario en un post existente
+const createComment = (req, res) => {
+  const postId = parseInt(req.params.id);
+  const { author, content } = req.body;
+
+  const post = posts.find(p => p.id === postId);
 
   if (!post) {
     return res.status(404).json({ message: "Post no encontrado" });
   }
 
-  res.json(post);
+  if (!author || !content) {
+    return res.status(400).json({ message: "Faltan datos del comentario" });
+  }
+
+  const newComment = {
+    id: post.comments.length + 1,
+    author,
+    content,
+    createdAt: new Date()
+  };
+
+  post.comments.push(newComment);
+  res.status(201).json(newComment);
 };
 
 // 👇 Exportar con los mismos nombres que usás en las rutas
-module.exports = { getAllPosts, getPost, getPostById };
+module.exports = { getAllPosts, createPost, createComment };
